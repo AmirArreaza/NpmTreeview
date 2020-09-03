@@ -38,30 +38,102 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPackage = void 0;
 var got_1 = require("got");
+var response_1 = require("./response");
 /**
  * Attempts to retrieve package data from the npm registry and return it
  */
 exports.getPackage = function (req, res, next) {
+    var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var _a, name, version, npmPackage, dependencies, error_1;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var _c, name, version, rootPackage, response, dependencies, _d, _e, _i, dependencyName, dependencyVersion, innerDependency, innerPackage, transitivePackage, innerKey, value, transitiveDependency, error_1;
+        return __generator(this, function (_f) {
+            switch (_f.label) {
                 case 0:
-                    _a = req.params, name = _a.name, version = _a.version;
-                    _b.label = 1;
+                    _c = req.params, name = _c.name, version = _c.version;
+                    _f.label = 1;
                 case 1:
-                    _b.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, got_1.default("https://registry.npmjs.org/" + name).json()];
+                    _f.trys.push([1, 7, , 8]);
+                    return [4 /*yield*/, getPackageFromNPM(name)];
                 case 2:
-                    npmPackage = _b.sent();
-                    dependencies = npmPackage.versions[version].dependencies;
-                    return [2 /*return*/, res.status(200).json({ name: name, version: version, dependencies: dependencies })];
+                    rootPackage = _f.sent();
+                    response = new response_1.ResponseWrapper(name, version);
+                    console.log("Repository " + response.name + " found " + response.version);
+                    dependencies = rootPackage.versions[version].dependencies;
+                    _d = [];
+                    for (_e in dependencies)
+                        _d.push(_e);
+                    _i = 0;
+                    _f.label = 3;
                 case 3:
-                    error_1 = _b.sent();
+                    if (!(_i < _d.length)) return [3 /*break*/, 6];
+                    dependencyName = _d[_i];
+                    dependencyVersion = dependencies[dependencyName].replace('^', '');
+                    innerDependency = new response_1.Dependency(dependencyName, dependencyVersion);
+                    return [4 /*yield*/, getPackageFromNPM(dependencyName)];
+                case 4:
+                    innerPackage = _f.sent();
+                    transitivePackage = innerPackage.versions[dependencyVersion].dependencies;
+                    for (innerKey in transitivePackage) {
+                        value = transitivePackage[innerKey];
+                        transitiveDependency = new response_1.Dependency(innerKey, value);
+                        (_a = innerDependency.transitiveDependency) === null || _a === void 0 ? void 0 : _a.push(transitiveDependency);
+                    }
+                    (_b = response.dependencies) === null || _b === void 0 ? void 0 : _b.push(innerDependency);
+                    console.log(response);
+                    _f.label = 5;
+                case 5:
+                    _i++;
+                    return [3 /*break*/, 3];
+                case 6: return [2 /*return*/, res.status(200).json({ response: response })];
+                case 7:
+                    error_1 = _f.sent();
                     return [2 /*return*/, next(error_1)];
-                case 4: return [2 /*return*/];
+                case 8: return [2 /*return*/];
             }
         });
     });
 };
+function getDependency(name, version, outerDependency) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function () {
+        var innerDependency, innerPackage, transitivePackage, innerName, innerVersion, transitiveDependency;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    innerDependency = new response_1.Dependency(name, version);
+                    return [4 /*yield*/, getPackageFromNPM(name)];
+                case 1:
+                    innerPackage = _c.sent();
+                    transitivePackage = innerPackage.versions[version].dependencies;
+                    for (innerName in transitivePackage) {
+                        innerVersion = transitivePackage[innerName];
+                        transitiveDependency = new response_1.Dependency(innerName, innerVersion);
+                        getDependency(innerName, innerVersion, innerDependency);
+                        (_a = innerDependency.transitiveDependency) === null || _a === void 0 ? void 0 : _a.push(transitiveDependency);
+                    }
+                    (_b = outerDependency.transitiveDependency) === null || _b === void 0 ? void 0 : _b.push(innerDependency);
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function getPackageFromNPM(pckg) {
+    return __awaiter(this, void 0, void 0, function () {
+        var transitive, error_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, got_1.default("https://registry.npmjs.org/" + pckg).json()];
+                case 1:
+                    transitive = _a.sent();
+                    return [2 /*return*/, transitive];
+                case 2:
+                    error_2 = _a.sent();
+                    return [2 /*return*/, error_2];
+                case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
 //# sourceMappingURL=package.js.map
