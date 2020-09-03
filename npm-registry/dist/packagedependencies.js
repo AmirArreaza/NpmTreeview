@@ -15,4 +15,4 @@ var Dependency = /** @class */ (function () {
     return Dependency;
 }());
 exports.Dependency = Dependency;
-//# sourceMappingURL=response.js.map
+//# sourceMappingURL=packagedependencies.js.map

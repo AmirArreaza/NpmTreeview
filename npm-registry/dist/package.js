@@ -38,55 +38,49 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getPackage = void 0;
 var got_1 = require("got");
-var response_1 = require("./response");
+var packagedependencies_1 = require("./packagedependencies");
 /**
  * Attempts to retrieve package data from the npm registry and return it
  */
 exports.getPackage = function (req, res, next) {
-    var _a, _b;
+    var _a;
     return __awaiter(this, void 0, void 0, function () {
-        var _c, name, version, rootPackage, response, dependencies, _d, _e, _i, dependencyName, dependencyVersion, innerDependency, innerPackage, transitivePackage, innerKey, value, transitiveDependency, error_1;
-        return __generator(this, function (_f) {
-            switch (_f.label) {
+        var _b, name, version, rootPackage, response, dependencies, _c, _d, _i, dependencyName, dependencyVersion, innerDependency, loading, error_1;
+        return __generator(this, function (_e) {
+            switch (_e.label) {
                 case 0:
-                    _c = req.params, name = _c.name, version = _c.version;
-                    _f.label = 1;
+                    _b = req.params, name = _b.name, version = _b.version;
+                    _e.label = 1;
                 case 1:
-                    _f.trys.push([1, 7, , 8]);
+                    _e.trys.push([1, 7, , 8]);
                     return [4 /*yield*/, getPackageFromNPM(name)];
                 case 2:
-                    rootPackage = _f.sent();
-                    response = new response_1.ResponseWrapper(name, version);
+                    rootPackage = _e.sent();
+                    response = new packagedependencies_1.Dependency(name, version);
                     console.log("Repository " + response.name + " found " + response.version);
                     dependencies = rootPackage.versions[version].dependencies;
-                    _d = [];
-                    for (_e in dependencies)
-                        _d.push(_e);
+                    _c = [];
+                    for (_d in dependencies)
+                        _c.push(_d);
                     _i = 0;
-                    _f.label = 3;
+                    _e.label = 3;
                 case 3:
-                    if (!(_i < _d.length)) return [3 /*break*/, 6];
-                    dependencyName = _d[_i];
+                    if (!(_i < _c.length)) return [3 /*break*/, 6];
+                    dependencyName = _c[_i];
                     dependencyVersion = dependencies[dependencyName].replace('^', '');
-                    innerDependency = new response_1.Dependency(dependencyName, dependencyVersion);
-                    return [4 /*yield*/, getPackageFromNPM(dependencyName)];
+                    innerDependency = new packagedependencies_1.Dependency(dependencyName, dependencyVersion);
+                    return [4 /*yield*/, getDependency(dependencyName, dependencyVersion, innerDependency)];
                 case 4:
-                    innerPackage = _f.sent();
-                    transitivePackage = innerPackage.versions[dependencyVersion].dependencies;
-                    for (innerKey in transitivePackage) {
-                        value = transitivePackage[innerKey];
-                        transitiveDependency = new response_1.Dependency(innerKey, value);
-                        (_a = innerDependency.transitiveDependency) === null || _a === void 0 ? void 0 : _a.push(transitiveDependency);
-                    }
-                    (_b = response.dependencies) === null || _b === void 0 ? void 0 : _b.push(innerDependency);
+                    loading = _e.sent();
+                    (_a = response.dependencies) === null || _a === void 0 ? void 0 : _a.push(innerDependency);
                     console.log(response);
-                    _f.label = 5;
+                    _e.label = 5;
                 case 5:
                     _i++;
                     return [3 /*break*/, 3];
                 case 6: return [2 /*return*/, res.status(200).json({ response: response })];
                 case 7:
-                    error_1 = _f.sent();
+                    error_1 = _e.sent();
                     return [2 /*return*/, next(error_1)];
                 case 8: return [2 /*return*/];
             }
@@ -94,32 +88,36 @@ exports.getPackage = function (req, res, next) {
     });
 };
 function getDependency(name, version, outerDependency) {
-    var _a, _b;
+    var _a;
     return __awaiter(this, void 0, void 0, function () {
-        var innerDependency, innerPackage, transitivePackage, innerName, innerVersion, transitiveDependency;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var innerDependency, innerPackage, transitivePackage, innerName, innerVersion, transitiveDependency, error_2;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
-                    innerDependency = new response_1.Dependency(name, version);
+                    _b.trys.push([0, 2, , 3]);
+                    innerDependency = new packagedependencies_1.Dependency(name, version);
                     return [4 /*yield*/, getPackageFromNPM(name)];
                 case 1:
-                    innerPackage = _c.sent();
+                    innerPackage = _b.sent();
                     transitivePackage = innerPackage.versions[version].dependencies;
                     for (innerName in transitivePackage) {
                         innerVersion = transitivePackage[innerName];
-                        transitiveDependency = new response_1.Dependency(innerName, innerVersion);
+                        transitiveDependency = new packagedependencies_1.Dependency(innerName, innerVersion);
                         getDependency(innerName, innerVersion, innerDependency);
-                        (_a = innerDependency.transitiveDependency) === null || _a === void 0 ? void 0 : _a.push(transitiveDependency);
+                        (_a = outerDependency.dependencies) === null || _a === void 0 ? void 0 : _a.push(transitiveDependency);
                     }
-                    (_b = outerDependency.transitiveDependency) === null || _b === void 0 ? void 0 : _b.push(innerDependency);
-                    return [2 /*return*/];
+                    return [3 /*break*/, 3];
+                case 2:
+                    error_2 = _b.sent();
+                    return [2 /*return*/, error_2];
+                case 3: return [2 /*return*/];
             }
         });
     });
 }
 function getPackageFromNPM(pckg) {
     return __awaiter(this, void 0, void 0, function () {
-        var transitive, error_2;
+        var transitive, error_3;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -129,8 +127,8 @@ function getPackageFromNPM(pckg) {
                     transitive = _a.sent();
                     return [2 /*return*/, transitive];
                 case 2:
-                    error_2 = _a.sent();
-                    return [2 /*return*/, error_2];
+                    error_3 = _a.sent();
+                    return [2 /*return*/, error_3];
                 case 3: return [2 /*return*/];
             }
         });
