@@ -23,15 +23,26 @@ class TreeviewBoard extends Component {
         value: "",
       },
     },
+    success: false
   };
 
   async fetchValues(name, version) {
-    const fetchedValues = await axios.get("package/"+name+"/"+version);
-    this.setState({
-      data: fetchedValues.data.response,
-      package: fetchedValues.data.response.name,
-      version: fetchedValues.data.response.version,
-    });
+    try {
+      const fetchedValues = await axios.get("package/" + name + "/" + version);
+      this.setState({
+        data: fetchedValues.data.response,
+        package: fetchedValues.data.response.name,
+        version: fetchedValues.data.response.version,
+      });
+      this.setState({success: true});
+    } catch (error) {
+      console.log(error);
+      this.setState({
+        package: name,
+        version: version,
+      });
+      this.setState({success: false});
+    }
   }
 
   componentDidMount() {
@@ -47,20 +58,20 @@ class TreeviewBoard extends Component {
 
     updatedFormElement.value = event.target.value;
     updatedOrderForm[inputIdentifier] = updatedFormElement;
-    console.log(updatedFormElement);
     this.setState({ form: updatedOrderForm });
   };
 
   searchHandler = (event) => {
     //Avoid to send the request
     event.preventDefault();
-    if(this.state.form.package.value !== '' && this.state.form.version.value){
+    if (this.state.form.package.value !== "" && this.state.form.version.value) {
       console.log(this.state.form.package);
-      this.fetchValues(this.state.form.package.value, this.state.form.version.value);
-      
+      this.fetchValues(
+        this.state.form.package.value,
+        this.state.form.version.value
+      );
     }
-    
-  }
+  };
 
   render() {
     const formElementsArray = [];
@@ -105,7 +116,7 @@ class TreeviewBoard extends Component {
         <h4>
           {this.state.package} | {this.state.version}
         </h4>
-        {tree}
+        {this.state.success ? tree : <h5>Not Found!</h5>}
       </div>
     );
   }
