@@ -6,9 +6,8 @@ function App() {
   return (
     <div className="App">
       <header>
-        <h1>Mami dame alguito!</h1>
-        <TreeviewBoard />
       </header>
+      <TreeviewBoard />
     </div>
   );
 }

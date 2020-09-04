@@ -1,18 +1,24 @@
 import React from "react";
-import TreeView from "react-treeview";
 
-const treeItem = (props) => {
+function TreeviewItem({ item, id, depth = 0 }) {
+  if (!item) {
+    return null;
+  }
+  const innerDependencies = [];
+  for (let idx = 0; idx < item.dependencies.length; idx++) {
+    innerDependencies.push(
+     <TreeviewItem key={idx} item={item.dependencies[idx]} depth={depth + 1} />
+    );
+  }
+  
   return (
-    <div>
-      <TreeView
-        nodeLabel={props.label}
-        collapsed={props.collapsed}
-        onClick={props.handleClick}
-      >
-        + {props.children}
-      </TreeView>
-    </div>
+    <React.Fragment key={id}>
+      <div style={{ paddingLeft: 20*depth}}>
+        {item.name} | {item.version}
+        {innerDependencies}
+      </div>
+    </React.Fragment>
   );
-};
+}
 
-export default treeItem;
+export default TreeviewItem;

@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import axios from "../../axios-instance";
 
+import Input from "../../components/UI/Input/Input";
+import Button from "../../components/UI/Button/Button";
 import TreeviewItem from "../../components/TreeviewItem/TreeviewItem";
 
 class TreeviewBoard extends Component {
@@ -9,10 +11,22 @@ class TreeviewBoard extends Component {
     version: "",
     data: {},
     collapsedBookkeeping: [],
+    form: {
+      package: {
+        type: "text",
+        placeholder: "NPM package",
+        value: "",
+      },
+      version: {
+        type: "text",
+        placeholder: "Version",
+        value: "",
+      },
+    },
   };
 
-  async fetchValues() {
-    const fetchedValues = await axios.get("package/react/16.13.0");
+  async fetchValues(name, version) {
+    const fetchedValues = await axios.get("package/"+name+"/"+version);
     this.setState({
       data: fetchedValues.data.response,
       package: fetchedValues.data.response.name,
@@ -21,39 +35,73 @@ class TreeviewBoard extends Component {
   }
 
   componentDidMount() {
-    this.fetchValues();
+    this.fetchValues("react", "16.13.0");
   }
 
-  handleClick = (i) => {
-    let [...collapsedBookkeeping] = this.state.collapsedBookkeeping;
-    collapsedBookkeeping[i] = !collapsedBookkeeping[i];
-    this.setState({ collapsedBookkeeping: collapsedBookkeeping });
+  inputChangedHandler = (event, inputIdentifier) => {
+    const updatedOrderForm = {
+      ...this.state.form,
+    };
+
+    const updatedFormElement = { ...updatedOrderForm[inputIdentifier] };
+
+    updatedFormElement.value = event.target.value;
+    updatedOrderForm[inputIdentifier] = updatedFormElement;
+    console.log(updatedFormElement);
+    this.setState({ form: updatedOrderForm });
   };
 
-  render() {
-    let tree = null;
+  searchHandler = (event) => {
+    //Avoid to send the request
+    event.preventDefault();
+    if(this.state.form.package.value !== '' && this.state.form.version.value){
+      console.log(this.state.form.package);
+      this.fetchValues(this.state.form.package.value, this.state.form.version.value);
+      
+    }
+    
+  }
 
-    if (this.state.data.hasOwnProperty("name")) {
-      console.log(this.state.data.dependencies[0].name);
+  render() {
+    const formElementsArray = [];
+    for (let key in this.state.form) {
+      formElementsArray.push({
+        id: key,
+        config: this.state.form[key],
+      });
+    }
+
+    let tree = null;
+    if (this.state.data.name) {
       tree = [];
       for (let idx = 0; idx < this.state.data.dependencies.length; idx++) {
         tree.push(
-          <TreeviewItem
-            key={idx}
-            nodeLabel={this.state.package}
-            collapse={true}
-            click={this.handleClick.bind(null, idx)}
-          >
-            {this.state.data.dependencies[idx].name} | {this.state.data.dependencies[idx].version}
-          </TreeviewItem>
+          <div key={idx}>
+            <TreeviewItem
+              item={this.state.data.dependencies[idx]}
+              id={idx}
+            ></TreeviewItem>
+          </div>
         );
-        console.log(this.state.data.dependencies[idx].name);
       }
     }
 
     return (
       <div>
         <h1>Treeview Board!</h1>
+
+        <form onSubmit={this.searchHandler}>
+          {formElementsArray.map((formElement) => (
+            <Input
+              key={formElement.id}
+              config={formElement.config}
+              changed={(event) =>
+                this.inputChangedHandler(event, formElement.id)
+              }
+            />
+          ))}
+          <Button>Search</Button>
+        </form>
         <h4>
           {this.state.package} | {this.state.version}
         </h4>
