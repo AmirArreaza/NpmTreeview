@@ -81,7 +81,7 @@ exports.getPackage = function (req, res, next) {
                 case 6: return [2 /*return*/, res.status(200).json({ response: response })];
                 case 7:
                     error_1 = _e.sent();
-                    return [2 /*return*/, next(error_1)];
+                    return [2 /*return*/, res.status(404).json({ error: error_1 })];
                 case 8: return [2 /*return*/];
             }
         });
@@ -101,7 +101,7 @@ function getDependency(name, version, outerDependency) {
                     innerPackage = _b.sent();
                     transitivePackage = innerPackage.versions[version].dependencies;
                     for (innerName in transitivePackage) {
-                        innerVersion = transitivePackage[innerName];
+                        innerVersion = transitivePackage[innerName].replace('^', '');
                         transitiveDependency = new packagedependencies_1.Dependency(innerName, innerVersion);
                         getDependency(innerName, innerVersion, innerDependency);
                         (_a = outerDependency.dependencies) === null || _a === void 0 ? void 0 : _a.push(transitiveDependency);

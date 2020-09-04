@@ -27,7 +27,7 @@ export const getPackage: RequestHandler = async function (req, res, next) {
     }
     return res.status(200).json({ response });
   } catch (error) {
-    return next(error);
+    return res.status(404).json({ error });
   }
 };
 
@@ -38,7 +38,7 @@ async function getDependency(name, version, outerDependency) {
     const transitivePackage = innerPackage.versions[version].dependencies;
 
     for (let innerName in transitivePackage) {
-      let innerVersion = transitivePackage[innerName];
+      let innerVersion = transitivePackage[innerName].replace('^', '');
       let transitiveDependency = new Dependency(innerName, innerVersion);
       getDependency(innerName, innerVersion, innerDependency);
       outerDependency.dependencies?.push(transitiveDependency);
