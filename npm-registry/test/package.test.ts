@@ -24,7 +24,7 @@ describe('/package/:name/:version endpoint', () => {
       `http://localhost:${port}/package/${packageName}/${packageVersion}`,
     ).json();
 
-    expect(res.name).toEqual(packageName);
+    expect(res.response.name).toEqual(packageName);
   });
 
   it('returns dependencies', async () => {
@@ -35,10 +35,19 @@ describe('/package/:name/:version endpoint', () => {
       `http://localhost:${port}/package/${packageName}/${packageVersion}`,
     ).json();
 
-    expect(res.dependencies).toEqual({
-      'loose-envify': '^1.1.0',
-      'object-assign': '^4.1.1',
-      'prop-types': '^15.6.2',
-    });
+    expect(res.response.dependencies[0].name).toEqual(
+      'loose-envify'
+    );
   });
+
+  it('returns 404 Not Found', async () => {
+    const packageName = 'UnexistingPackage';
+    const packageVersion = '1.0.0';
+
+    const res: any = await got(
+      `http://localhost:${port}/package/${packageName}/${packageVersion}`,
+    ).json().catch(error => {
+      expect(error.name).toEqual("HTTPError");  
+    });
+  })
 });
