@@ -8,7 +8,9 @@ var package_1 = require("./package");
  */
 function createApp() {
     var app = express();
+    var cors = require('cors');
     app.use(express.json());
+    app.use(cors());
     app.get('/package/:name/:version', package_1.getPackage);
     return app;
 }

@@ -38,7 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var app_1 = require("./app");
 var getPort = require("get-port");
-var DEFAULT_PORT = 3000;
+var DEFAULT_PORT = 3001;
 function main() {
     return __awaiter(this, void 0, void 0, function () {
         var server, port;
